@@ -6,13 +6,15 @@ using UnityEngine.Tilemaps;
 public class PathfindingClicker : MonoBehaviour//goes on an agent to pathfind to mouse clicks
 {
     public TileMapData tileMapData;
+    Pathfinder pathfinder;
     Node[,] grid;
-    Queue<Vector3> path = new Queue<Vector3>();
+    Stack<Vector3> path = new Stack<Vector3>();
     Vector3 target;
     float speed = 5, stopDistance = 0.01f;
     bool moving = false;
     void Start(){
         grid = tileMapData.TileMapToGrid();
+        pathfinder = GetComponent<Pathfinder>();
     }
     void Update()
     {
@@ -21,12 +23,13 @@ public class PathfindingClicker : MonoBehaviour//goes on an agent to pathfind to
         }
         if (moving){
             //move a little towards target
-            Vector3 posNew = Vector3.Lerp(transform.position, target, speed * Time.deltaTime);
-            transform.Translate(posNew - transform.position);
+            Vector3 dir = (target - transform.position).normalized;
+            Vector3 displacement = dir * speed * Time.deltaTime;
+            transform.Translate(displacement);
             //check if at the target
             if (Vector3.Distance(transform.position, target) < stopDistance){
                 if (path.Count > 0)//if there is more on the path, set the next target
-                    target = path.Dequeue();
+                    target = path.Pop();
                 else
                     moving = false;//if the path is complete, stop moving
             }
@@ -46,15 +49,21 @@ public class PathfindingClicker : MonoBehaviour//goes on an agent to pathfind to
             Debug.Log("Not starting from a walkable node");
         }
         else if(goal.walkable){//this part needs updated when a* is in
-            // print("clicked at: " + posWorldM + ", target at: " + goal.posWorld);
-            if (moving){
-                path.Enqueue(goal.posWorld);
-            }else{
-                moving = true;
-                target = goal.posWorld;
-            }
+            pathfinder.AStar(start, goal, grid, PathCallback);
+            // if (moving){
+            //     path.Enqueue(goal.posWorld);
+            // }else{
+            //     moving = true;
+            //     target = goal.posWorld;
+            // }
         }else{
             print("clicked node not walkable");
         }
+    }
+
+    public void PathCallback(Stack<Vector3> _path){
+        path = _path;
+        moving = true;
+        target = path.Pop();
     }
 }

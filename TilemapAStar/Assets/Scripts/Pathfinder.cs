@@ -5,7 +5,19 @@ using UnityEngine;
 
 public class Pathfinder : MonoBehaviour
 {
-    public void AStar(Node start, Node goal, Node[,] grid, System.Action<Stack<Vector3>> callback){//return a path on the grid to the callback, from start to goal
+    public TileMapData tileMapData;
+    
+    Node[,] grid;
+    public Node[,] Grid {get { return grid; } }
+    void Awake(){
+        SetGrid();
+    }
+    void SetGrid(){//sets up the grid, and resets if needed
+        grid = tileMapData.TileMapToGrid();//get the tilemap data into nodes
+        //set the neighbors on the nodes
+        //run scan for paths to player
+    }
+    public void AStar(Node start, Node goal, System.Action<Stack<Vector3>> callback){//return a path on the grid to the callback, from start to goal
         List<Node> openSet = new List<Node>();//nodes that are to be looked at
         //per node variable that are not needed after search
         Dictionary<Node, float> gCost = new Dictionary<Node, float>();//cost of the current best path to the node. gcost = parent.gcost + distance(parent, node)
@@ -38,18 +50,13 @@ public class Pathfinder : MonoBehaviour
 
             }
         }
-
-        //test return
-        // Stack<Vector3> path = new Stack<Vector3>();
-        // path.Push(goal.posWorld);
-        // callback(path);
     }
 
     public float Heuristic(Node from, Node to){//use world space distance to calculate the heuristic, the estimation of cost
         return Vector3.Distance(from.posWorld, to.posWorld);//return the straight line distance 
     }
 
-    Node LowestCostNode(List<Node> list, Dictionary<Node, float> costs){//this method finds the lowest cost node, wont be needed with a heap
+    Node LowestCostNode(List<Node> list, Dictionary<Node, float> costs){//this method finds the lowest cost node O(n), wont be needed with a min heap O(1)
         float lowestValue = Mathf.Infinity;
         Node lowest = list[0];
         foreach (Node n in list){

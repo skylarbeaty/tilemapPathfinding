@@ -34,8 +34,10 @@ public class Pathfinder : MonoBehaviour
             //find the node with the lowest fcost
             Node current = openSet.Peek();//using a heap here gives O(1) look up
             
-            if (current == goal)//if we've reached the end
+            if (current == goal){//if we've reached the end
                 callback(TracePath(current, parent));//return the path
+                return;
+            }
             
             openSet.Remove();
             //loop thorugh neighbors of the current node
@@ -64,7 +66,7 @@ public class Pathfinder : MonoBehaviour
         Node start = Grid[startPosGrid.x, startPosGrid.y];
         Node goal = Grid[goalPosGrid.x, goalPosGrid.y];
 
-        if (start.walkable && goal.walkable && start != goal)
+        if (start.walkable && goal.walkable && start.posGrid != goal.posGrid)
             AStar(start, goal, callback);
         else {
             if (!start.walkable) Debug.Log("Start not walkable");

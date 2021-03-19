@@ -33,7 +33,7 @@ public class TileMapData : MonoBehaviour //this script should sit on a tilemap t
 
     // SPACE CONVERSIONS
 
-    public Vector2Int WorldPointToGridPosition(Vector3 posWorld){//take a world position (mouse click) and find what grid cell it should be on this tile map
+    public Vector2Int WorldPositionToGridPosition(Vector3 posWorld){//take a world position (mouse click) and find what grid cell it should be on this tile map
         Vector3Int posCell = tilemap.WorldToCell(posWorld);
         Vector2Int posGrid = CellPositionToGridPosition(posCell);
         return posGrid;

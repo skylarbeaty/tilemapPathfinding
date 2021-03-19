@@ -1,7 +1,7 @@
 ﻿// Editted from generic heap: https://gist.github.com/roufamatic/ee7e11469809f2b276c0d3dc6b8dd80b
-// I modified it into a min heap, added comments, and a added a method to speficially update a chosen element from the outside, to consider a lower inserted value
-//      - Contains(T) returns true is the heap has item
-//      - UpdateUp(T)
+// I modified it into a min heap, added comments, and a added a methods:
+//      - Contains(T) returns true is the heap has input value (used to in a*check whether to insert or update)
+//      - UpdateUp(T) finds input value in heap and attempts to shift up
 using System;
 public class MinHeap<T> where T : IComparable<T>
 {
@@ -35,9 +35,7 @@ public class MinHeap<T> where T : IComparable<T>
         return Array.IndexOf(heap, value) > -1; //array search will return -1 if the element is not there
     }
     public void UpdateUp(T value){//when you update the value and it went down, this will move it up the heap if needed
-        int index = Array.IndexOf(heap, value);
-        heap[index] = value;
-        ShiftUp(index);
+        ShiftUp(Array.IndexOf(heap, value));
     }
     private void ShiftUp(int heapIndex){//move an element up in the heap recursively until its correctly placed
         if (heapIndex == 0) 

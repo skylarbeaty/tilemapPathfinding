@@ -48,7 +48,7 @@ public class TileMapData : MonoBehaviour //this script should sit on a tilemap t
         return ret;
     }
 
-    Vector3Int GridPositionToCellPosition(Vector2Int posGrid){
+    public Vector3Int GridPositionToCellPosition(Vector2Int posGrid){
         //get the offset position
         Vector3Int ret = new Vector3Int(posGrid.x + bounds.xMin, posGrid.y + bounds.yMin, 0);
         return ret;

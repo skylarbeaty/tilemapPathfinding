@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PathfindingFollower : MonoBehaviour
 {
-    public Transform follow;
+    Transform follow;
 
     Pathfinder pathfinder;
     Stack<Vector3> path = new Stack<Vector3>();
@@ -14,8 +14,9 @@ public class PathfindingFollower : MonoBehaviour
     float updateLast = 0, updateTiming = 0.2f;
 
     void Start(){
-        pathfinder = follow.GetComponent<Pathfinder>();
-        UpdatePath();
+        pathfinder = FindObjectOfType<Pathfinder>();
+        follow = pathfinder.transform;
+        // UpdatePath();
     }
 
     void Update(){

@@ -1,14 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class Pathfinder : MonoBehaviour
 {
-    public TileMapData tileMapData;
+    TileMapData tileMapData;
+    TileMapDebug tileMapDebug;
     Node[,] grid;
     public Node[,] Grid {get { return grid; } }
-    void Awake(){
+    Transform player { get { return transform; } }//this script is meant to sit on the player, but references to the player are encapsulated 
+    void Start(){
+        tileMapDebug = FindObjectOfType<TileMapDebug>();
+        tileMapData = FindObjectOfType<TileMapData>();
         SetGrid();
     }
 
@@ -19,6 +22,9 @@ public class Pathfinder : MonoBehaviour
         //run scan for paths to player
     }
 
+    // A* pathfinding
+    // optimized for random start and goal
+    #region A*
     public void AStar(Node start, Node goal, System.Action<Stack<Vector3>> callback){//return a path on the grid to the callback, from start to goal
         MinHeap<Node> openSet = new MinHeap<Node>(30);//nodes that are to be looked at
         //per node variable that are not needed after search
@@ -27,7 +33,7 @@ public class Pathfinder : MonoBehaviour
         
         //initialize start node
         gCost[start] = 0;
-        start.fCost = Heuristic(start, goal);
+        start.cost = Heuristic(start, goal);//fCost = gCost (actual Path) + hCost (estimated distance to goal)
         openSet.Insert(start);
 
         while(openSet.Count != 0){
@@ -43,12 +49,12 @@ public class Pathfinder : MonoBehaviour
             //loop thorugh neighbors of the current node
             foreach(Node neighbor in current.neighbors){
                 //see what the cost to get to this neighbor through current would be. Current cost plus cost to get to neighbor. 
-                float gCostTest = gCost[current] + Vector3.Distance(current.posWorld, neighbor.posWorld);//using will result in 1 for straight and 1.5 for corners moves
+                float dist = Vector3.Distance(current.posWorld, neighbor.posWorld);//using will result in 1 for straight and 1.5 for corners moves. Tile weight could be added here
+                float gCostTest = gCost[current] + dist;//find the gcost through current
                 if (!gCost.ContainsKey(neighbor) || gCostTest < gCost[neighbor]){//if this is a better path than this node has, make this its parent
                     parent[neighbor] = current;
                     gCost[neighbor] = gCostTest;
-                    // fCost[neighbor] = gCost[neighbor] + Heuristic(neighbor,goal);
-                    neighbor.fCost = gCost[neighbor] + Heuristic(neighbor,goal);
+                    neighbor.cost = gCost[neighbor] + Heuristic(neighbor,goal);//fCost
                     if (!openSet.Contains(neighbor))
                         openSet.Insert(neighbor);//new node will be inserted and sorted up
                     else
@@ -88,4 +94,60 @@ public class Pathfinder : MonoBehaviour
         }
         return path;
     }
+
+    #endregion
+
+    // Dijkstra's Algorithm pathfinding
+    // optimized for many paths to/from the same source (the player)
+    // can not perform paths where the the source is not of the endpoints
+    #region Dijkstra
+
+    void Update(){
+        if (Input.GetKeyDown(KeyCode.Space)){
+            Vector2Int pos = tileMapData.WorldPositionToGridPosition(player.position);
+            Node source = grid[pos.x, pos.y];
+            Dijkstra(source);
+            tileMapDebug.DiplayParentPaths(grid);
+            foreach(Node node in grid){
+                if (node.parent == null)
+                    continue;
+                Debug.DrawLine(node.posWorld, node.parent.posWorld, Color.yellow, 5.0f);
+            }
+        }
+    }
+
+    void Dijkstra(Node source){//creates a parent structure that can be traced to find a path to one location (the player)
+        MinHeap<Node> openSet = new MinHeap<Node>(30);//nodes that are to be looked at
+        HashSet<Node> touched = new HashSet<Node>();//nodes contained have had their costs set. Alternative to resetting all the costs
+
+        //initialize start node
+        source.cost = 0;//cost of the current best path to the node. gcost = parent.gcost + distance(parent, node)
+        touched.Add(source);
+        openSet.Insert(source);
+
+        while(openSet.Count != 0){
+            //find the node with the lowest cost
+            Node current = openSet.Peek();//using a heap here gives O(1) look up
+            openSet.Remove();
+
+            //loop thorugh neighbors of the current node
+            foreach(Node neighbor in current.neighbors){
+                //see what the cost to get to this neighbor through current would be. Current cost plus cost to get to neighbor. 
+                float dist = Vector3.Distance(current.posWorld, neighbor.posWorld);//using will result in 1 for straight and 1.5 for corners moves. Tile weight could be added here
+                float costTest = current.cost + dist;//find the gcost through current
+                if (!touched.Contains(neighbor) || costTest < neighbor.cost){//if this is a better path than this node has, make this its parent
+                    neighbor.parent = current;
+                    neighbor.cost = costTest;
+                    touched.Add(neighbor);
+                    if (!openSet.Contains(neighbor))
+                        openSet.Insert(neighbor);//new node will be inserted and sorted up
+                    else
+                        openSet.UpdateUp(neighbor);//update the node position in the heap since its compare value changed
+                }
+            }
+        }
+    }
+
+    #endregion
+
 }

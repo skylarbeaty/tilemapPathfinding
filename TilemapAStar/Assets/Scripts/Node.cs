@@ -7,7 +7,8 @@ public class Node : IComparable<Node>
     public bool walkable;
     public Vector2Int posGrid;
     public Vector3 posWorld;
-    public float fCost = Mathf.Infinity;//real high number default
+    public float cost = Mathf.Infinity;//cost this node is sorted on for the heap. Used in AStar as fcost, used in Dijkstra as gcost. fCost = gCost (actual Path) + hCost (estimated distance to goal)
+    public Node parent;//parents are only set here in Dijkstra, and only checked when tracing paths from that. Dijkstra only overwrites. AStar keeps its own parent list
     public List<Node> neighbors = new List<Node>();
     public Node(bool _walkable, Vector2Int _posGrid, Vector3 _posWorld){
         walkable = _walkable;
@@ -16,11 +17,11 @@ public class Node : IComparable<Node>
     }
 
     public int CompareTo(Node other){//needed for IComparable, used for Heap
-        return (int) (10f * (this.fCost - other.fCost));//multiplied by 10 to solve fractional costs (should only be 0.0 or 0.5)
+        return (int) (10f * (this.cost - other.cost));//multiplied by 10 to solve fractional costs (should only be 0.0 or 0.5)
     }
 
     public override string ToString(){//for proper print for Debug
-        return "Node pos: " + posGrid.x + ", " + posGrid.y + ", fcost: " + fCost;
+        return "Node pos: " + posGrid.x + ", " + posGrid.y + ", cost: " + cost;
     }
     
     public void SetNeighbors(Node[,] grid){//creates references to the neighbors so they dont need to be calculated each time

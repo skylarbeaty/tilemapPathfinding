@@ -5,9 +5,7 @@ using UnityEngine.Tilemaps;
 
 public class PathfindingClicker : MonoBehaviour//goes on an agent to pathfind to mouse clicks
 {
-    public TileMapData tileMapData;
     Pathfinder pathfinder;
-    Node[,] grid;
     Stack<Vector3> path = new Stack<Vector3>();
     Vector3 target;
     float speed = 5f, stopDistance = 0.05f;
@@ -16,7 +14,6 @@ public class PathfindingClicker : MonoBehaviour//goes on an agent to pathfind to
     // int testingWalkableLoops = 0;
     void Start(){
         pathfinder = GetComponent<Pathfinder>();
-        grid = pathfinder.Grid;
     }
     void Update()
     {

@@ -8,7 +8,8 @@ public class Pathfinder : MonoBehaviour
     TileMapDebug tileMapDebug;
     Node[,] grid;
     public Node[,] Grid {get { return grid; } }
-    Transform player { get { return transform; } }//this script is meant to sit on the player, but references to the player are encapsulated 
+    Transform player { get { return transform; } }//this script is meant to sit on the player
+    Vector2Int lastDijkstraPos;
     void Start(){
         tileMapDebug = FindObjectOfType<TileMapDebug>();
         tileMapData = FindObjectOfType<TileMapData>();
@@ -19,7 +20,6 @@ public class Pathfinder : MonoBehaviour
         grid = tileMapData.TileMapToGrid();//get the tilemap data into nodes
         foreach(Node n in grid)//set the neighbors for all the nodes on the grid ahead of time, once
             n.SetNeighbors(grid);
-        //run scan for paths to player
     }
 
     // A* pathfinding
@@ -99,21 +99,100 @@ public class Pathfinder : MonoBehaviour
 
     // Dijkstra's Algorithm pathfinding
     // optimized for many paths to/from the same source (the player)
-    // can not perform paths where the the source is not of the endpoints
+    // can not perform paths where the the source is not one of the endpoints
     #region Dijkstra
 
     void Update(){
-        if (Input.GetKeyDown(KeyCode.Space)){
-            Vector2Int pos = tileMapData.WorldPositionToGridPosition(player.position);
-            Node source = grid[pos.x, pos.y];
-            Dijkstra(source);
-            tileMapDebug.DiplayParentPaths(grid);
-            foreach(Node node in grid){
-                if (node.parent == null)
-                    continue;
-                Debug.DrawLine(node.posWorld, node.parent.posWorld, Color.yellow, 5.0f);
+        if (Input.GetKeyDown(KeyCode.Space)){//test running dijkstras
+            // Vector3 playerStartPos = player.position;
+            // player.position = player.position + Vector3.right;//shift the player to make sure the path needs updating
+            //run once
+            float timeStart = Time.realtimeSinceStartup;
+            Node start = RandomWalkable();
+            PathToPlayer(start.posWorld, TestCallback);
+
+            float time = Time.realtimeSinceStartup - timeStart;
+            float avg = time / 1;
+            print("Paths traced: 1, Total Time: " + time + " seconds, Average Time: " + avg);
+            
+            //run 100 times
+            timeStart = Time.realtimeSinceStartup;
+            // player.position = playerStartPos;
+            for (int i = 0; i < 100000; i++){
+                start = RandomWalkable();
+                PathToPlayer(start.posWorld, TestCallback);
             }
+
+            time = Time.realtimeSinceStartup - timeStart;
+            avg = time / 100000;
+            print("Paths traced: 100,000, Total Time: " + time + " seconds, Average Time: " + avg);
+            
+            //run 1000 times
+            timeStart = Time.realtimeSinceStartup;
+            // player.position = player.position + Vector3.right;
+            for (int i = 0; i < 1000000; i++){
+                start = RandomWalkable();
+                PathToPlayer(start.posWorld, TestCallback);
+            }
+
+            time = Time.realtimeSinceStartup - timeStart;
+            avg = time / 1000000;
+            print("Paths traced: 1,000,000, Total Time: " + time + " seconds, Average Time: " + avg);
+
+            // player.position = playerStartPos;//return to original position
         }
+    }
+
+    void TestCallback(Stack<Vector3> blah){
+        return;
+    }
+
+    Node RandomWalkable(){//gets a random walkable space for testing random inputs
+        Node ret;
+        do{
+            int ix = Mathf.FloorToInt(Random.Range(0, Grid.GetLength(0) - 0.001f));
+            int iy = Mathf.FloorToInt(Random.Range(0, Grid.GetLength(1) - 0.001f));
+            ret = Grid[ix,iy];
+        }while (!ret.walkable);
+        return ret;
+    }
+    public void PathToPlayer(Vector3 startWorld, System.Action<Stack<Vector3>> callback){
+        Vector2Int playerPos = tileMapData.WorldPositionToGridPosition(player.position);
+        Vector2Int startGrid = tileMapData.WorldPositionToGridPosition(startWorld);
+        
+        if (lastDijkstraPos != playerPos){//does dijstra need to be updated: is the player on a new node?
+            print("Running Dijkstra's Algorithm");
+            lastDijkstraPos = playerPos;
+            Dijkstra(grid[playerPos.x, playerPos.y]);//this can be costly (more than A*) but will only happen a couple times a second when the player is moving
+        }
+
+        callback(TraceDijkstraPath(grid[startGrid.x, startGrid.y]));
+    }
+
+    Stack<Vector3> TraceDijkstraPath(Node startNode){
+        Stack<Vector3> forwardTrace = new Stack<Vector3>();
+        Node current = startNode;
+        forwardTrace.Push(current.posWorld);//first node would be skipped otherwise
+
+        while(current.parent != null){//trace back the parents to the player
+            current = current.parent;//go to next parent
+            forwardTrace.Push(current.posWorld);//add that parent
+            // if (forwardTrace.Count > 100){
+            //     print("path over 100, breaking");
+            //     break;
+            // }
+            // if (current == current.parent){
+            //     print("redundant path, breaking");
+            //     break;
+            // }
+        }
+
+        Stack<Vector3> reversedTrace = new Stack<Vector3>();
+        while (forwardTrace.Count != 0){
+            reversedTrace.Push(forwardTrace.Pop());//reverse the stack
+        }
+
+        return reversedTrace;
     }
 
     void Dijkstra(Node source){//creates a parent structure that can be traced to find a path to one location (the player)
@@ -122,6 +201,7 @@ public class Pathfinder : MonoBehaviour
 
         //initialize start node
         source.cost = 0;//cost of the current best path to the node. gcost = parent.gcost + distance(parent, node)
+        source.parent = null;
         touched.Add(source);
         openSet.Insert(source);
 

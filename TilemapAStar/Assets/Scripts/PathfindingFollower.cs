@@ -45,7 +45,8 @@ public class PathfindingFollower : MonoBehaviour
         }
     }
     
-    void UpdatePath() => pathfinder.AStar(transform.position, follow.position, PathCallback);
+    // void UpdatePath() => pathfinder.AStar(transform.position, follow.position, PathCallback);
+    void UpdatePath() => pathfinder.PathToPlayer(transform.position, PathCallback);
 
     public void PathCallback(Stack<Vector3> _path){
         path = _path;

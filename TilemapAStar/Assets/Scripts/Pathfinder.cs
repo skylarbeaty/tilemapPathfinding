@@ -161,7 +161,6 @@ public class Pathfinder : MonoBehaviour
         Vector2Int startGrid = tileMapData.WorldPositionToGridPosition(startWorld);
         
         if (lastDijkstraPos != playerPos){//does dijstra need to be updated: is the player on a new node?
-            print("Running Dijkstra's Algorithm");
             lastDijkstraPos = playerPos;
             Dijkstra(grid[playerPos.x, playerPos.y]);//this can be costly (more than A*) but will only happen a couple times a second when the player is moving
         }
@@ -177,14 +176,6 @@ public class Pathfinder : MonoBehaviour
         while(current.parent != null){//trace back the parents to the player
             current = current.parent;//go to next parent
             forwardTrace.Push(current.posWorld);//add that parent
-            // if (forwardTrace.Count > 100){
-            //     print("path over 100, breaking");
-            //     break;
-            // }
-            // if (current == current.parent){
-            //     print("redundant path, breaking");
-            //     break;
-            // }
         }
 
         Stack<Vector3> reversedTrace = new Stack<Vector3>();

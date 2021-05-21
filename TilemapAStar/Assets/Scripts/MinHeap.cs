@@ -1,5 +1,5 @@
 ﻿// Editted from generic heap: https://gist.github.com/roufamatic/ee7e11469809f2b276c0d3dc6b8dd80b
-// I modified it into a min heap, added comments, and a added a methods:
+// I modified it into a min heap, added comments, and a added methods:
 //      - Contains(T) returns true is the heap has input value (used to in a*check whether to insert or update)
 //      - UpdateUp(T) finds input value in heap and attempts to shift up
 using System;

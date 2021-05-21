@@ -104,8 +104,6 @@ public class Pathfinder : MonoBehaviour
 
     void Update(){
         if (Input.GetKeyDown(KeyCode.Space)){//test running dijkstras
-            // Vector3 playerStartPos = player.position;
-            // player.position = player.position + Vector3.right;//shift the player to make sure the path needs updating
             //run once
             float timeStart = Time.realtimeSinceStartup;
             Node start = RandomWalkable();

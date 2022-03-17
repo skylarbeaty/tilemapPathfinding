@@ -5,6 +5,8 @@ A* pathfinding in Unity integrated with Tilemap
  - clone or download the repo
  - open [TilemapAStar](TilemapAStar) in Unity 2019.4.18f1 or later
  - open "small level" scene, in the scene's folder and press play
+
+Made using [a sprite pack from itch.io](https://0x72.itch.io/16x16-dungeon-tileset)
  
 ## Tilemap and Pathfinding
 

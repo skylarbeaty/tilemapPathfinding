@@ -27,7 +27,7 @@ In A* pathfinding we want to find a path between a start and goal across a graph
 
 *Snippet from [Pathfinder.cs](TilemapAStar/Assets/Scripts/Pathfinder.cs)*
 
-```
+```C#
 public void AStar(Node start, Node goal, System.Action> callback){//return a path on the grid to the callback, from start to goal
     MinHeap openSet = new MinHeap(30);//nodes that are to be looked at
     //per node variable that are not needed after search
@@ -87,7 +87,7 @@ This does introduce another problem with this particular implementation of Dijks
 
 *Snippet from [Pathfinder.cs](TilemapAStar/Assets/Scripts/Pathfinder.cs)*
 
-```
+```C#
 void Dijkstra(Node source){//creates a parent structure that can be traced to find a path to one location (the player)
     MinHeap openSet = new MinHeap(30);//nodes that are to be looked at
     HashSet touched = new HashSet();//nodes contained have had their costs set. Alternative to resetting all the costs

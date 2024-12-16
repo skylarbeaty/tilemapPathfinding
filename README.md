@@ -1,13 +1,6 @@
-# tilemapPathfinding
-A* pathfinding in Unity integrated with Tilemap
- 
- How to run:
- - clone or download the repo
- - open [TilemapAStar](TilemapAStar) in Unity 2019.4.18f1 or later
- - open "small level" scene, in the scene's folder and press play
+# Tilemap Pathfinding
+A 2D pathfinding  system for Unity. It takes adventage of Unity's Tilemap system to generate its graph.
 
-Made using [a sprite pack from itch.io](https://0x72.itch.io/16x16-dungeon-tileset)
- 
 ## Tilemap and Pathfinding
 
 I make a lot of things in 2D in Unity and a conspicuously absent part of Unity Engine is an implementation of any kind of 2D pathfinding. In the past I had borrowed other people’s public implementations for pathfinding, but after I’d learned about several ways to do this in my coursework, I was eager to make this for myself. I also saw that the Unity Tilemap system has the potential to be an amazing tool to handle some aspects of this system. So i decided to make a novel implementation to A* and Djikstra’s pathfinding by using it in conjunction with the Unity Tilemap system.
@@ -74,12 +67,14 @@ While I was implementing A* pathfinding, I decided to document how it ran at var
 So far throughout this process I had been testing it by running one random walkable point to another random point, and this implementation does reasonably fast (several hundred times a second). However most of the paths needed in a game are to or from a player, who only moves to a new tile every so often. In this case you could run a pathfinding algorithm once, across the entire grid (or subgrid) and set up parentage of nodes so that you could trace a path child to parent all the way to the player’s node, without running any real calculations. I implemented this using Djikstra’s algorithm, as the advantage of A* is that it doesn’t need to explore as many nodes, but we want to explore all of them. The results showed that running this to find only one path was about twice as slow, but paths found after the first are so fast that over 1000 paths it took 99.6% less time than a fully optimized A*, which was so large a difference it was outside of the significant figures to which I could accurately measure.
 
 *Execution Times of Pathfinding Functions*
-|               | 1 path | 100 paths | 1000 paths | average (ms) |
+|               | 1 path | 100* paths | 1000* paths | average (ms) |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
 | Unoptimized A*  | 0.0024s  | 0.18s  | 1.5s  | 1.5ms  | 
 | A* with a Heap  | 0.0057s  | 0.13s  | 1.1s  | 1.1ms  | 
 | A* with preloaded neighbors  | 0.0044s  | 0.090s  | 0.84s | 0.84ms  | 
 | Dijkstra's to a single goal  | 0.0080s  | 0.00036s  | 0.0031s  | 	0.0031ms  | 
+
+<sub>* "100" and "1000" paths represent the *"next 100"*  or *"next 100"* after the **first** run. <br> Very import for Djikstra's in this case.</sub>
 
 So why use A* at all? Why bother Implementing it? Dijkstra's Algorithm is only better in this narrow case. That 3.1μs average path trace is only good after the 8ms first run of Dijkstra's has taken place. Any time there is a path needed that is not to or from the player (or other common goal) A* is much faster. This implementation of Dijkstra’s does not terminate until it’s explored all of the walkable nodes, which gives up every advantage that A* has to make it so fast. It needs to do this to create the proper parent structure so that you can trace a path from any node to the goal.
 
@@ -127,3 +122,11 @@ void Dijkstra(Node source){//creates a parent structure that can be traced to fi
 I took on this project in my spare time in my senior year at Kent State. It was really fun to be able to apply a lot of things I’d learned and tackle a subject that seemed intimidating before I started my degree. It is cool to see this interacting with the tilemap system, which opens up some interesting workflow possibilities. I’m glad I decided to measure the timings on different versions of the algorithm, it was enlightening on how much time I’m really saving, and showed how optimal a combination of Djikstra’s and A* can be.
 
 This is one project I see myself actually revisiting in the future. I make games that often need this kind of pathfinding, and in any kind of large project I can see additions I’d like to make. I would certainly want to depth-limit the Djikstra’s, as I mentioned before. I read that you can use scriptable objects to encode data in tile map tiles like weights for difficult terrain, and other things; that would be nice to have available to me.
+
+## How to run
+
+ - clone or download the repo
+ - open [TilemapAStar](TilemapAStar) in Unity 2019.4.18f1 or later
+ - open "small level" scene, in the scene's folder and press play
+
+Made using [a sprite pack from itch.io](https://0x72.itch.io/16x16-dungeon-tileset)
